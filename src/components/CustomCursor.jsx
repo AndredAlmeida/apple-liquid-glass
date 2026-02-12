@@ -145,6 +145,7 @@ export default function CustomCursor() {
     bevelOffset,
     bevelThickness,
     extrudeDepth,
+    glassTintColor,
   } = useSnapshot(state);
   const dragPlane = useMemo(
     () => new THREE.Plane(new THREE.Vector3(0, 0, 1), -DRAG_Z),
@@ -290,7 +291,7 @@ export default function CustomCursor() {
 
   const materialProps = useMemo(() => {
     return {
-      color: "white",
+      color: glassTintColor,
       metalness: 0,
       roughness: textRoughness,
       transmission: 1,
@@ -304,7 +305,7 @@ export default function CustomCursor() {
       iridescenceThicknessRange: [0, 140],
       dispersion: 5,
     };
-  }, [reflectivity, textIor, textThickness, textRoughness]);
+  }, [reflectivity, textIor, textThickness, textRoughness, glassTintColor]);
 
   return (
     <group ref={groupRef} position={[0, 0, DRAG_Z]}>

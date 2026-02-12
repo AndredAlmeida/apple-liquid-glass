@@ -16,6 +16,7 @@ const state = proxy({
   textThickness: 0.27,
   textRoughness: 0,
   extrudeDepth: 1.5,
+  glassTintColor: "#ffffff",
   sampleSize: "medium",
   cameraMode: "perspective",
   cameraYAngle: 0,

@@ -112,6 +112,19 @@ export default function ParameterPanel() {
       ))}
 
       <label className="parameter-panel__row">
+        <span className="parameter-panel__label">Glass Tint</span>
+        <span className="parameter-panel__value">{values.glassTintColor}</span>
+        <input
+          className="parameter-panel__color"
+          type="color"
+          value={values.glassTintColor}
+          onChange={(event) => {
+            state.glassTintColor = event.target.value;
+          }}
+        />
+      </label>
+
+      <label className="parameter-panel__row">
         <span className="parameter-panel__label">SampleSize</span>
         <span className="parameter-panel__value">
           {sampleSizes.find((option) => option.value === values.sampleSize)?.label}

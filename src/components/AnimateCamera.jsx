@@ -3,7 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { useSnapshot } from "valtio";
 import { easing } from "maath";
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 import { state as appState } from "../store";
 
 const BASE_CAMERA_DISTANCE = 25;

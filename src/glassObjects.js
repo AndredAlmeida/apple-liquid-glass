@@ -1,5 +1,11 @@
 import * as THREE from "three/webgpu";
-import { uniform, color as color3 } from "three/tsl";
+import {
+  uniform,
+  normalLocal,
+  positionLocal,
+  normalize,
+  mx_noise_vec3,
+} from "three/tsl";
 import { subscribe } from "valtio/vanilla";
 import { state } from "./store";
 
@@ -91,7 +97,16 @@ const glassUniforms = {
   roughness: uniform(state.textRoughness),
   reflectivity: uniform(state.reflectivity),
   envMapIntensity: uniform(state.glassReflectionEnabled ? state.glassReflectionOpacity : 0),
+  noiseScale: uniform(state.noiseScale),
+  noiseDepth: uniform(state.noiseDepth),
 };
+
+// TSL node: perturb geometry normal with perlin noise
+const noisyNormal = (() => {
+  const scaledPos = positionLocal.mul(glassUniforms.noiseScale);
+  const noise = mx_noise_vec3(scaledPos);
+  return normalize(normalLocal.add(noise.mul(glassUniforms.noiseDepth)));
+})();
 
 function createGlassMaterial(envMap) {
   const mat = new THREE.MeshPhysicalMaterial({
@@ -111,6 +126,7 @@ function createGlassMaterial(envMap) {
   mat.iorNode = glassUniforms.ior;
   mat.thicknessNode = glassUniforms.thickness;
   mat.roughnessNode = glassUniforms.roughness;
+  mat.normalNode = noisyNormal;
 
   return mat;
 }
@@ -255,6 +271,8 @@ export function updateGlassMaterials(meshes) {
   glassUniforms.roughness.value = state.textRoughness;
   glassUniforms.reflectivity.value = state.reflectivity;
   glassUniforms.envMapIntensity.value = state.glassReflectionEnabled ? state.glassReflectionOpacity : 0;
+  glassUniforms.noiseScale.value = state.noiseScale;
+  glassUniforms.noiseDepth.value = state.noiseDepth;
 
   // These properties don't have node equivalents — set directly
   for (const mesh of meshes) {

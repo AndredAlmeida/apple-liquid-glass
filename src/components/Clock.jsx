@@ -1,4 +1,4 @@
-import { Center, Text3D, Text, Image, Billboard } from "@react-three/drei";
+import { Center, Text3D, Text } from "@react-three/drei";
 import { useState, useEffect, useRef } from "react";
 import { useSnapshot } from "valtio";
 import { state } from "../store";
@@ -100,15 +100,15 @@ export default function Clock() {
 
 function GridDisplay() {
   const { isMobile } = useSnapshot(state);
+  const iconsTexture = useTexture("/icons.png");
+
   return (
-    <Billboard>
-      <Image
-        url="/icons.png"
-        transparent
-        scale={[2.8, 1.55, 1]}
-        position={isMobile ? [0, 0.25, -0.1] : [0, 0.2, -0.1]}
-        toneMapped={false}
-      />
-    </Billboard>
+    <mesh
+      scale={[2.8, 1.55, 1]}
+      position={isMobile ? [0, 0.25, -0.1] : [0, 0.2, -0.1]}
+    >
+      <planeGeometry args={[1, 1]} />
+      <meshBasicMaterial map={iconsTexture} transparent toneMapped={false} />
+    </mesh>
   );
 }

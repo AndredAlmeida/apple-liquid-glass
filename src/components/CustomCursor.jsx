@@ -2,14 +2,20 @@ import { Capsule, MeshTransmissionMaterial, Sphere } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import gsap from "gsap";
-import { useControls } from "leva";
 import { useSnapshot } from "valtio";
 import { state } from "../store";
 
 export default function CustomCursor() {
   const cursorRef = useRef();
   const [clicked, setClicked] = useState(false);
-  const { hovered, reflectivity, isDragging } = useSnapshot(state);
+  const {
+    hovered,
+    reflectivity,
+    isDragging,
+    textIor,
+    textThickness,
+    textRoughness,
+  } = useSnapshot(state);
 
   useFrame((state, delta) => {
     cursorRef.current.position.set(
@@ -68,9 +74,9 @@ export default function CustomCursor() {
       <MeshTransmissionMaterial
         color="white"
         metalness={0}
-        roughness={0.01}
-        ior={1.8}
-        thickness={reflectivity}
+        roughness={textRoughness}
+        ior={textIor}
+        thickness={textThickness}
         reflectivity={reflectivity}
         chromaticAberration={0.1}
         clearcoat={0.4}
@@ -82,7 +88,7 @@ export default function CustomCursor() {
         samples={4}
       />
     );
-  }, [reflectivity]);
+  }, [reflectivity, textIor, textThickness, textRoughness]);
 
   return (
     <group ref={cursorRef}>

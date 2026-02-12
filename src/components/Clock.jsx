@@ -5,7 +5,16 @@ import { state } from "../store";
 import { useTexture } from "@react-three/drei";
 
 export default function Clock() {
-  const { isMobile, showSettings, display } = useSnapshot(state);
+  const {
+    isMobile,
+    showSettings,
+    display,
+    bevelSegments,
+    bevelOffset,
+    textIor,
+    textThickness,
+    textRoughness,
+  } = useSnapshot(state);
 
   const formatTime = () => {
     const now = new Date();
@@ -38,17 +47,18 @@ export default function Clock() {
               // curveSegments={24}
               bevelEnabled
               bevelSize={isMobile ? 0.012 : 0.016}
-              bevelSegments={8}
+              bevelSegments={bevelSegments}
+              bevelOffset={bevelOffset}
               bevelThickness={0.03}
               font={"/fonts/Morganite_Medium.json"}
             >
               {time}
               <meshPhysicalMaterial
                 color="white"
-                roughness={0.23}
+                roughness={textRoughness}
                 transmission
-                ior={1.8}
-                thickness={2}
+                ior={textIor}
+                thickness={textThickness}
                 reflectivity={0.4}
                 clearcoat={0.2}
                 clearcoatRoughness={0.1}

@@ -9,11 +9,13 @@ import CustomCursor from "./components/CustomCursor";
 import * as THREE from "three";
 import LoadingScreen from "./components/LoadingScreen/LoadingScreen";
 import Settings from "./components/Settings";
+import ParameterPanel from "./components/ParameterPanel";
 
 function App() {
   return (
     <div className="main-container">
       <LoadingScreen />
+      <ParameterPanel />
       <Canvas {...canvasProps}>
         <Suspense fallback={null}>
           <Clock />

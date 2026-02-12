@@ -9,6 +9,11 @@ const state = proxy({
   reflectivity: 0.45,
   isDragging: false,
   display: "grid",
+  bevelSegments: 8,
+  bevelOffset: 0,
+  textIor: 1.8,
+  textThickness: 2,
+  textRoughness: 0.23,
 });
 
 export { state };

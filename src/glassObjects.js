@@ -1,4 +1,5 @@
 import * as THREE from "three/webgpu";
+import { uniform, color as color3 } from "three/tsl";
 import { subscribe } from "valtio/vanilla";
 import { state } from "./store";
 
@@ -83,24 +84,35 @@ function createUShape(width, height, legThickness, cornerRadius) {
   return shape;
 }
 
-function getMaterialProps(envMap) {
-  return {
+// Shared TSL uniforms for dynamic material properties
+const glassUniforms = {
+  ior: uniform(state.textIor),
+  thickness: uniform(state.textThickness),
+  roughness: uniform(state.textRoughness),
+  reflectivity: uniform(state.reflectivity),
+  envMapIntensity: uniform(state.glassReflectionEnabled ? state.glassReflectionOpacity : 0),
+};
+
+function createGlassMaterial(envMap) {
+  const mat = new THREE.MeshPhysicalMaterial({
     color: new THREE.Color(state.glassTintColor),
     metalness: 0,
-    roughness: state.textRoughness,
     transmission: 1,
-    ior: state.textIor,
-    thickness: state.textThickness,
-    reflectivity: state.reflectivity,
     envMap,
-    envMapIntensity: state.glassReflectionEnabled ? state.glassReflectionOpacity : 0,
     clearcoat: 0.4,
     clearcoatRoughness: 0.05,
     iridescence: 0.9,
     iridescenceIOR: 0.1,
     iridescenceThicknessRange: [0, 140],
     dispersion: 5,
-  };
+  });
+
+  // Assign TSL uniform nodes so values update reliably on WebGPU
+  mat.iorNode = glassUniforms.ior;
+  mat.thicknessNode = glassUniforms.thickness;
+  mat.roughnessNode = glassUniforms.roughness;
+
+  return mat;
 }
 
 function getGeometryDetail() {
@@ -159,15 +171,13 @@ export function createGlassObjects(scene, envMap) {
   const group = new THREE.Group();
   group.position.set(0, 0, DRAG_Z);
 
-  const matProps = getMaterialProps(envMap);
   const detail = getGeometryDetail();
   const dims = getGeometryDimensions();
   const depthScale = Math.max(0.1, state.extrudeDepth);
 
   // Sphere
   const sphereGeo = new THREE.SphereGeometry(dims.sphereRadius, detail.radialSegments, detail.sphereHeightSegments);
-  const sphereMat = new THREE.MeshPhysicalMaterial(matProps);
-  const sphere = new THREE.Mesh(sphereGeo, sphereMat);
+  const sphere = new THREE.Mesh(sphereGeo, createGlassMaterial(envMap));
   sphere.scale.set(2, 2, 0.24 * depthScale);
   sphere.position.set(-0.5, 0, 0);
   sphere.name = "glass-sphere";
@@ -175,16 +185,14 @@ export function createGlassObjects(scene, envMap) {
 
   // Triangle
   const triangleGeo = createTriangleGeometry();
-  const triangleMat = new THREE.MeshPhysicalMaterial(matProps);
-  const triangle = new THREE.Mesh(triangleGeo, triangleMat);
+  const triangle = new THREE.Mesh(triangleGeo, createGlassMaterial(envMap));
   triangle.position.set(-0.5, 0.5, 0);
   triangle.name = "glass-triangle";
   group.add(triangle);
 
   // Capsule
   const capsuleGeo = new THREE.CapsuleGeometry(dims.capsuleRadius, dims.capsuleLength, detail.capsuleCapSegments, detail.radialSegments);
-  const capsuleMat = new THREE.MeshPhysicalMaterial(matProps);
-  const capsule = new THREE.Mesh(capsuleGeo, capsuleMat);
+  const capsule = new THREE.Mesh(capsuleGeo, createGlassMaterial(envMap));
   capsule.scale.set(2, 2, 2 * depthScale);
   capsule.position.set(0.5, 0, 0);
   capsule.rotation.set(0, 0, -Math.PI / 2);
@@ -193,38 +201,14 @@ export function createGlassObjects(scene, envMap) {
 
   // U-shape
   const uGeo = createUGeometry();
-  const uMat = new THREE.MeshPhysicalMaterial(matProps);
-  const uMesh = new THREE.Mesh(uGeo, uMat);
+  const uMesh = new THREE.Mesh(uGeo, createGlassMaterial(envMap));
   uMesh.position.set(0.5, 0.5, 0);
   uMesh.name = "glass-u";
   group.add(uMesh);
 
   scene.add(group);
 
-  // Subscribe to material property changes
-  const materialKeys = [
-    "textIor", "textThickness", "textRoughness", "glassTintColor",
-    "reflectivity", "glassReflectionEnabled", "glassReflectionOpacity",
-  ];
-  let prevMaterialState = materialKeys.map((k) => state[k]);
-
-  subscribe(state, () => {
-    const currentMaterialState = materialKeys.map((k) => state[k]);
-    const materialChanged = currentMaterialState.some((v, i) => v !== prevMaterialState[i]);
-
-    if (materialChanged) {
-      prevMaterialState = currentMaterialState;
-      const meshes = [sphere, triangle, capsule, uMesh];
-      for (const mesh of meshes) {
-        mesh.material.color.set(state.glassTintColor);
-        mesh.material.roughness = state.textRoughness;
-        mesh.material.ior = state.textIor;
-        mesh.material.thickness = state.textThickness;
-        mesh.material.reflectivity = state.reflectivity;
-        mesh.material.envMapIntensity = state.glassReflectionEnabled ? state.glassReflectionOpacity : 0;
-      }
-    }
-  });
+  const allMeshes = [sphere, triangle, capsule, uMesh];
 
   // Subscribe to geometry-affecting state changes
   const geoKeys = ["bevelSegments", "bevelOffset", "bevelThickness", "extrudeDepth"];
@@ -261,7 +245,23 @@ export function createGlassObjects(scene, envMap) {
     }
   });
 
-  return group;
+  return { group, meshes: allMeshes };
+}
+
+export function updateGlassMaterials(meshes) {
+  // Update TSL uniforms — these feed directly into the WebGPU shader
+  glassUniforms.ior.value = state.textIor;
+  glassUniforms.thickness.value = state.textThickness;
+  glassUniforms.roughness.value = state.textRoughness;
+  glassUniforms.reflectivity.value = state.reflectivity;
+  glassUniforms.envMapIntensity.value = state.glassReflectionEnabled ? state.glassReflectionOpacity : 0;
+
+  // These properties don't have node equivalents — set directly
+  for (const mesh of meshes) {
+    mesh.material.color.set(state.glassTintColor);
+    mesh.material.envMapIntensity = glassUniforms.envMapIntensity.value;
+    mesh.material.reflectivity = state.reflectivity;
+  }
 }
 
 export function setupDragInteraction(group, camera, domElement) {

@@ -16,7 +16,7 @@ import {
   setupBackgroundSwitching,
   updateBackgroundSize,
 } from "./background";
-import { createGlassObjects, setupDragInteraction } from "./glassObjects";
+import { createGlassObjects, setupDragInteraction, updateGlassMaterials } from "./glassObjects";
 import { setupParameterPanel, setupLoadingScreen, createGridDisplay } from "./ui";
 import "./index.css";
 
@@ -101,7 +101,7 @@ async function init() {
   createGridDisplay(scene, iconsTexture);
 
   // --- Glass objects ---
-  const glassGroup = createGlassObjects(scene, envMap);
+  const { group: glassGroup, meshes: glassMeshes } = createGlassObjects(scene, envMap);
   setupDragInteraction(glassGroup, activeCamera, renderer.domElement);
 
   // --- Camera mode switching ---
@@ -116,7 +116,7 @@ async function init() {
       controls.dispose();
       controls = setupControls(activeCamera, renderer.domElement);
 
-      // Rebuild drag interaction with new camera
+      // Rebuild drag with new camera
       setupDragInteraction(glassGroup, activeCamera, renderer.domElement);
 
       viewportSize = computeViewport(activeCamera);
@@ -154,6 +154,7 @@ async function init() {
 
     animateCamera(activeCamera, controls, delta);
     animateLight(light, pointer, delta);
+    updateGlassMaterials(glassMeshes);
 
     renderer.render(scene, activeCamera);
   });

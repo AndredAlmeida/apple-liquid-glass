@@ -1,87 +1,89 @@
 import { useEffect, useRef, useLayoutEffect, useMemo } from "react";
-import { extend, useThree } from "@react-three/fiber";
-import { shaderMaterial, useTexture, useVideoTexture } from "@react-three/drei";
-import * as THREE from "three";
-import { useControls } from "leva";
+import { useThree } from "@react-three/fiber";
+import { useTexture, useVideoTexture } from "@react-three/drei";
+import * as THREE from "three/webgpu";
+import {
+  Fn,
+  texture,
+  uniform,
+  vec2,
+  vec3,
+  vec4,
+  mix,
+  select,
+  float,
+  positionLocal,
+  varying,
+} from "three/tsl";
 import { useSnapshot } from "valtio";
 import { state } from "../store";
 
+function createCoverMaterial(mapTexture, viewportRes, videoRes, darkenAmount) {
+  const viewportResolution = uniform(viewportRes, "vec2");
+  const videoResolution = uniform(videoRes, "vec2");
+
+  // Pass vertex position.xy as a varying to the fragment stage
+  const vScreenPos = varying(positionLocal.xy, "vScreenPos");
+
+  // TSL fragment logic equivalent to the original GLSL
+  const coverFragment = Fn(() => {
+    // Calculate aspect ratios
+    const viewportAspect = viewportResolution.x.div(viewportResolution.y);
+    const videoAspect = videoResolution.x.div(videoResolution.y);
+
+    // Convert screen position [-1,1] to normalized UV [0,1]
+    const screenUV = vScreenPos.add(1.0).mul(0.5).toVar("screenUV");
+
+    // Condition: video wider than viewport
+    const videoIsWider = videoAspect.greaterThan(viewportAspect);
+
+    // Calculate scale for each case
+    const scale = select(
+      videoIsWider,
+      viewportAspect.div(videoAspect),
+      videoAspect.div(viewportAspect)
+    );
+
+    // Apply scaling to the appropriate axis
+    // When video is wider: scale X, offset X by (1-scale)*0.5
+    // When video is taller: scale Y, offset Y by (1-scale)*0.25
+    const scaledX = select(
+      videoIsWider,
+      screenUV.x.mul(scale).add(float(1.0).sub(scale).mul(0.5)),
+      screenUV.x
+    );
+
+    const scaledY = select(
+      videoIsWider,
+      screenUV.y,
+      screenUV.y.mul(scale).add(float(1.0).sub(scale).mul(0.25))
+    );
+
+    const finalUV = vec2(scaledX, scaledY).clamp(0.0, 1.0);
+
+    // Sample texture at computed UV
+    const texColor = texture(mapTexture, finalUV);
+
+    // Darken by mixing with black
+    const finalColor = mix(texColor.rgb, vec3(0.0, 0.0, 0.0), darkenAmount);
+
+    return vec4(finalColor, 1.0);
+  });
+
+  const material = new THREE.MeshBasicNodeMaterial();
+  material.colorNode = coverFragment();
+  material.depthWrite = false;
+
+  // Expose uniforms for external updates
+  material._viewportResolution = viewportResolution;
+  material._videoResolution = videoResolution;
+
+  return material;
+}
+
 function VideoBackground({ videoNumber }) {
   const { viewport, camera } = useThree();
-
-  const materialRef = useRef();
   const meshRef = useRef();
-
-  const CustomVideoMaterial = useMemo(
-    () =>
-      shaderMaterial(
-        {
-          time: 0,
-          map: null,
-          viewportResolution: new THREE.Vector2(
-            window.innerWidth,
-            window.innerHeight
-          ),
-          videoResolution: new THREE.Vector2(20, 10),
-        },
-        // vertex shader
-        /*glsl*/ `
-          varying vec2 vUv;
-          varying vec2 vScreenPos;
-          void main() {
-            vUv = uv;
-            vScreenPos = position.xy;
-            // gl_Position = vec4(position, 1.0); // for 2d
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-          }
-        `,
-        // fragment shader
-        /*glsl*/ `
-          uniform float time;
-          uniform sampler2D map;
-          uniform vec2 viewportResolution;
-          uniform vec2 videoResolution;
-          varying vec2 vUv;
-          varying vec2 vScreenPos;
-      
-          void main() {
-            // Calculate aspect ratios
-            float viewportAspect = viewportResolution.x / viewportResolution.y;
-            float videoAspect = videoResolution.x / videoResolution.y;
-            
-            // Convert screen position to normalized UV coordinates [0, 1]
-            vec2 screenUV = (vScreenPos + 1.0) * 0.5;
-            
-            // Calculate scale factor to cover the screen
-            float scale;
-            vec2 offset = vec2(0.0);
-            
-            if (videoAspect > viewportAspect) {
-              // Video is wider than viewport
-              scale = viewportAspect / videoAspect;
-              offset.x = (1.0 - scale) * 0.5;
-              screenUV.x = screenUV.x * scale + offset.x;
-            } else {
-              // Video is taller than viewport
-              scale = videoAspect / viewportAspect;
-              offset.y = (1.0 - scale) * 0.25;
-              screenUV.y = screenUV.y * scale + offset.y;
-            }
-            
-            // Clamp to ensure we don't go outside texture bounds
-            screenUV = clamp(screenUV, 0.0, 1.0);
-            
-            vec4 texColor = texture2D(map, screenUV);
-            vec3 finalColor = mix(texColor.rgb, vec3(0.0, 0.0, 0.0), 0.3);
-            gl_FragColor = vec4(finalColor, 1.0);
-          }
-        `
-      ),
-    []
-  );
-
-  // Extend the material for use in React Three Fiber
-  extend({ CustomVideoMaterial });
 
   const videoTexture = useVideoTexture(`/video_demo${videoNumber}.mp4`, {
     start: true,
@@ -89,188 +91,100 @@ function VideoBackground({ videoNumber }) {
     loop: true,
   });
 
-  useEffect(() => {
-    if (materialRef.current) {
-      materialRef.current.map = videoTexture;
-    }
+  const material = useMemo(() => {
+    return createCoverMaterial(
+      videoTexture,
+      new THREE.Vector2(viewport.width, viewport.height),
+      new THREE.Vector2(20, 10),
+      0.3
+    );
   }, [videoTexture]);
 
-  // Function to update dimensions
   const updateDimensions = () => {
-    if (materialRef.current) {
-      materialRef.current.viewportResolution.set(
-        viewport.width,
-        viewport.height
-      );
+    if (material._viewportResolution) {
+      material._viewportResolution.value.set(viewport.width, viewport.height);
     }
     if (meshRef.current) {
-      meshRef.current.scale.set(viewport.width / 1.5, viewport.height / 1.5, 1);
+      meshRef.current.scale.set(
+        viewport.width / 1.5,
+        viewport.height / 1.5,
+        1
+      );
     }
   };
 
-  // Initialize dimensions synchronously before first render
   useLayoutEffect(() => {
     updateDimensions();
-    if (materialRef.current && videoTexture) {
-      materialRef.current.map = videoTexture;
-    }
   }, []);
 
-  // Update viewport dimensions when they change
   useEffect(() => {
     updateDimensions();
   }, [viewport]);
 
-  // Listen for camera changes (FOV animations, etc.)
   useEffect(() => {
     updateDimensions();
   }, [camera.fov, camera.aspect]);
-
-  // Ensure texture is always applied when it changes
-  useEffect(() => {
-    if (materialRef.current && videoTexture) {
-      materialRef.current.map = videoTexture;
-    }
-  }, []);
 
   return (
     <mesh
       position={[0, 0, -1.5]}
       ref={meshRef}
       scale={[viewport.width, viewport.height, 1]}
+      material={material}
     >
       <planeGeometry args={[2.5, 2.5]} />
-      <customVideoMaterial ref={materialRef} depthWrite={false} />
     </mesh>
   );
 }
 
 function ImageBackground({ imageName }) {
   const { viewport, camera } = useThree();
-
-  const materialRef = useRef();
   const meshRef = useRef();
-
-  const CustomVideoMaterial = shaderMaterial(
-    {
-      time: 0,
-      map: null,
-      viewportResolution: new THREE.Vector2(
-        window.innerWidth,
-        window.innerHeight
-      ),
-      videoResolution: new THREE.Vector2(20, 10),
-    },
-    // vertex shader
-    /*glsl*/ `
-          varying vec2 vUv;
-          varying vec2 vScreenPos;
-          void main() {
-            vUv = uv;
-            vScreenPos = position.xy;
-            // gl_Position = vec4(position, 1.0);
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-          }
-        `,
-    // fragment shader
-    /*glsl*/ `
-          uniform float time;
-          uniform sampler2D map;
-          uniform vec2 viewportResolution;
-          uniform vec2 videoResolution;
-          varying vec2 vUv;
-          varying vec2 vScreenPos;
-      
-          void main() {
-            // Calculate aspect ratios
-            float viewportAspect = viewportResolution.x / viewportResolution.y;
-            float videoAspect = videoResolution.x / videoResolution.y;
-            
-            // Convert screen position to normalized UV coordinates [0, 1]
-            vec2 screenUV = (vScreenPos + 1.0) * 0.5;
-            
-            // Calculate scale factor to cover the screen
-            float scale;
-            vec2 offset = vec2(0.0);
-            
-            if (videoAspect > viewportAspect) {
-              // Video is wider than viewport
-              scale = viewportAspect / videoAspect;
-              offset.x = (1.0 - scale) * 0.5;
-              screenUV.x = screenUV.x * scale + offset.x;
-            } else {
-              // Video is taller than viewport
-              scale = videoAspect / viewportAspect;
-              offset.y = (1.0 - scale) * 0.25;
-              screenUV.y = screenUV.y * scale + offset.y;
-            }
-            
-            // Clamp to ensure we don't go outside texture bounds
-            screenUV = clamp(screenUV, 0.0, 1.0);
-            
-            vec4 texColor = texture2D(map, screenUV);
-            vec3 finalColor = mix(texColor.rgb, vec3(0.0, 0.0, 0.0), 0.2);
-            gl_FragColor = vec4(finalColor, 1.0);
-          }
-        `
-  );
-
-  extend({ CustomVideoMaterial });
 
   const imageTexture = useTexture(`/${imageName}.jpg`);
 
-  useEffect(() => {
-    if (materialRef.current) {
-      materialRef.current.map = imageTexture;
-    }
+  const material = useMemo(() => {
+    return createCoverMaterial(
+      imageTexture,
+      new THREE.Vector2(viewport.width, viewport.height),
+      new THREE.Vector2(20, 10),
+      0.2
+    );
   }, [imageTexture]);
 
-  // Function to update dimensions
   const updateDimensions = () => {
-    if (materialRef.current) {
-      materialRef.current.viewportResolution.set(
-        viewport.width,
-        viewport.height
-      );
+    if (material._viewportResolution) {
+      material._viewportResolution.value.set(viewport.width, viewport.height);
     }
     if (meshRef.current) {
-      meshRef.current.scale.set(viewport.width / 1.5, viewport.height / 1.5, 1);
+      meshRef.current.scale.set(
+        viewport.width / 1.5,
+        viewport.height / 1.5,
+        1
+      );
     }
   };
 
-  // Initialize dimensions synchronously before first render
   useLayoutEffect(() => {
     updateDimensions();
-    if (materialRef.current && imageTexture) {
-      materialRef.current.map = imageTexture;
-    }
   }, []);
 
-  // Update viewport dimensions when they change
   useEffect(() => {
     updateDimensions();
   }, [viewport]);
 
-  // Listen for camera changes (FOV animations, etc.)
   useEffect(() => {
     updateDimensions();
   }, [camera.fov, camera.aspect]);
-
-  // Ensure texture is always applied when it changes
-  useEffect(() => {
-    if (materialRef.current && imageTexture) {
-      materialRef.current.map = imageTexture;
-    }
-  }, []);
 
   return (
     <mesh
       position={[0, 0, -1.5]}
       ref={meshRef}
       scale={[viewport.width, viewport.height, 1]}
+      material={material}
     >
       <planeGeometry args={[2.5, 2.5]} />
-      <customVideoMaterial ref={materialRef} depthWrite={false} />
     </mesh>
   );
 }

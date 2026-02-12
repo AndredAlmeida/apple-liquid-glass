@@ -1,6 +1,9 @@
 # Apple Liquid Glass using Threes and React Three Fiber
 A simple-to-use example on recreating the Apple Liquid Glass effect in React Three Fiber
 
+## Fork Note
+This repository is a fork of the original project and is focused on porting the rendering pipeline from WebGL to WebGPU using TSL (Three Shading Language).
+
 <p align="center">
     <a href="https://appleliquidglass.vercel.app/" target="_blank"><img src="https://appleliquidglass.vercel.app/preview.jpg" width="100%"/></a>
 </p>

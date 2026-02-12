@@ -12,6 +12,48 @@ function syncCursorCenter(position) {
   state.cursorCenterZ = position.z;
 }
 
+function createRoundedTriangleShape(size, cornerRadius) {
+  const halfWidth = size * 0.5;
+  const height = size * Math.sqrt(3) * 0.5;
+  const points = [
+    new THREE.Vector2(0, height * 0.66),
+    new THREE.Vector2(-halfWidth, -height * 0.33),
+    new THREE.Vector2(halfWidth, -height * 0.33),
+  ];
+  const shape = new THREE.Shape();
+
+  const corners = points.map((point, index) => {
+    const previous = points[(index + points.length - 1) % points.length];
+    const next = points[(index + 1) % points.length];
+    const toPrevious = previous.clone().sub(point).normalize();
+    const toNext = next.clone().sub(point).normalize();
+
+    return {
+      point,
+      start: point.clone().add(toPrevious.multiplyScalar(cornerRadius)),
+      end: point.clone().add(toNext.multiplyScalar(cornerRadius)),
+    };
+  });
+
+  shape.moveTo(corners[0].start.x, corners[0].start.y);
+
+  for (let index = 0; index < corners.length; index += 1) {
+    const corner = corners[index];
+    const nextCorner = corners[(index + 1) % corners.length];
+
+    shape.quadraticCurveTo(
+      corner.point.x,
+      corner.point.y,
+      corner.end.x,
+      corner.end.y
+    );
+    shape.lineTo(nextCorner.start.x, nextCorner.start.y);
+  }
+
+  shape.closePath();
+  return shape;
+}
+
 export default function CustomCursor() {
   const groupRef = useRef();
   const dragOffsetRef = useRef(new THREE.Vector3());
@@ -139,6 +181,29 @@ export default function CustomCursor() {
 
   const depthScale = useMemo(() => Math.max(0.1, extrudeDepth), [extrudeDepth]);
 
+  const roundedTriangleGeometry = useMemo(() => {
+    const triangleShape = createRoundedTriangleShape(0.24, 0.045);
+    const geometry = new THREE.ExtrudeGeometry(triangleShape, {
+      depth: 0.05 * depthScale,
+      steps: 1,
+      bevelEnabled: true,
+      bevelSegments: Math.max(1, Math.round(bevelSegments)),
+      bevelSize: Math.max(0.002, bevelThickness),
+      bevelThickness: Math.max(0.001, bevelThickness),
+      bevelOffset,
+      curveSegments: Math.max(8, Math.round(bevelSegments) * 3),
+    });
+    geometry.center();
+
+    return geometry;
+  }, [bevelOffset, bevelSegments, bevelThickness, depthScale]);
+
+  useEffect(() => {
+    return () => {
+      roundedTriangleGeometry.dispose();
+    };
+  }, [roundedTriangleGeometry]);
+
   const materialProps = useMemo(() => {
     return {
       color: "white",
@@ -175,6 +240,17 @@ export default function CustomCursor() {
       >
         <MeshTransmissionMaterial {...materialProps} />
       </Sphere>
+
+      <mesh
+        position={[-0.5, 0.5, 0]}
+        geometry={roundedTriangleGeometry}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+      >
+        <MeshTransmissionMaterial {...materialProps} />
+      </mesh>
 
       <Capsule
         scale={[2, 2, 2 * depthScale]}

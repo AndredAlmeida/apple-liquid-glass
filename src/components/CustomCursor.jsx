@@ -25,6 +25,7 @@ export default function CustomCursor() {
     sampleSize,
     bevelSegments,
     bevelOffset,
+    extrudeDepth,
   } = useSnapshot(state);
   const dragPlane = useMemo(
     () => new THREE.Plane(new THREE.Vector3(0, 0, 1), -DRAG_Z),
@@ -128,6 +129,8 @@ export default function CustomCursor() {
     return { sphereRadius, capsuleRadius, capsuleLength };
   }, [bevelOffset]);
 
+  const depthScale = useMemo(() => Math.max(0.1, extrudeDepth), [extrudeDepth]);
+
   const materialProps = useMemo(() => {
     return {
       color: "white",
@@ -150,7 +153,7 @@ export default function CustomCursor() {
   return (
     <group ref={groupRef} position={[0, 0, DRAG_Z]}>
       <Sphere
-        scale={[2, 2, 0.24]}
+        scale={[2, 2, 0.24 * depthScale]}
         args={[
           geometryDimensions.sphereRadius,
           geometryDetail.radialSegments,
@@ -166,7 +169,7 @@ export default function CustomCursor() {
       </Sphere>
 
       <Capsule
-        scale={[2, 2, 2]}
+        scale={[2, 2, 2 * depthScale]}
         args={[
           geometryDimensions.capsuleRadius,
           geometryDimensions.capsuleLength,

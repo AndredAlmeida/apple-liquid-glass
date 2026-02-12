@@ -50,6 +50,13 @@ const controls = [
     step: 0.01,
   },
   {
+    key: "extrudeDepth",
+    label: "Extrude Depth",
+    min: 0.1,
+    max: 3,
+    step: 0.01,
+  },
+  {
     key: "cameraYAngle",
     label: "Camera Y Angle",
     min: -90,

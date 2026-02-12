@@ -14,6 +14,7 @@ const state = proxy({
   textIor: 1.8,
   textThickness: 2,
   textRoughness: 0.23,
+  extrudeDepth: 1,
   sampleSize: "medium",
   cameraMode: "perspective",
   cameraYAngle: 0,

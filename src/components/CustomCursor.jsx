@@ -54,6 +54,83 @@ function createRoundedTriangleShape(size, cornerRadius) {
   return shape;
 }
 
+function createUShape(width, height, legThickness, cornerRadius) {
+  const halfWidth = width * 0.5;
+  const halfHeight = height * 0.5;
+  const innerLeft = -halfWidth + legThickness;
+  const innerRight = halfWidth - legThickness;
+  const innerBottom = -halfHeight + legThickness;
+  const maxCornerRadius = Math.min(
+    cornerRadius,
+    legThickness * 0.5,
+    halfWidth,
+    halfHeight,
+    (innerRight - innerLeft) * 0.5
+  );
+  const shape = new THREE.Shape();
+
+  shape.moveTo(-halfWidth + maxCornerRadius, halfHeight);
+  shape.lineTo(innerLeft - maxCornerRadius, halfHeight);
+  shape.quadraticCurveTo(
+    innerLeft,
+    halfHeight,
+    innerLeft,
+    halfHeight - maxCornerRadius
+  );
+  shape.lineTo(innerLeft, innerBottom + maxCornerRadius);
+  shape.quadraticCurveTo(
+    innerLeft,
+    innerBottom,
+    innerLeft + maxCornerRadius,
+    innerBottom
+  );
+  shape.lineTo(innerRight - maxCornerRadius, innerBottom);
+  shape.quadraticCurveTo(
+    innerRight,
+    innerBottom,
+    innerRight,
+    innerBottom + maxCornerRadius
+  );
+  shape.lineTo(innerRight, halfHeight - maxCornerRadius);
+  shape.quadraticCurveTo(
+    innerRight,
+    halfHeight,
+    innerRight + maxCornerRadius,
+    halfHeight
+  );
+  shape.lineTo(halfWidth - maxCornerRadius, halfHeight);
+  shape.quadraticCurveTo(
+    halfWidth,
+    halfHeight,
+    halfWidth,
+    halfHeight - maxCornerRadius
+  );
+  shape.lineTo(halfWidth, -halfHeight + maxCornerRadius);
+  shape.quadraticCurveTo(
+    halfWidth,
+    -halfHeight,
+    halfWidth - maxCornerRadius,
+    -halfHeight
+  );
+  shape.lineTo(-halfWidth + maxCornerRadius, -halfHeight);
+  shape.quadraticCurveTo(
+    -halfWidth,
+    -halfHeight,
+    -halfWidth,
+    -halfHeight + maxCornerRadius
+  );
+  shape.lineTo(-halfWidth, halfHeight - maxCornerRadius);
+  shape.quadraticCurveTo(
+    -halfWidth,
+    halfHeight,
+    -halfWidth + maxCornerRadius,
+    halfHeight
+  );
+  shape.closePath();
+
+  return shape;
+}
+
 export default function CustomCursor() {
   const groupRef = useRef();
   const dragOffsetRef = useRef(new THREE.Vector3());
@@ -198,11 +275,29 @@ export default function CustomCursor() {
     return geometry;
   }, [bevelOffset, bevelSegments, bevelThickness, depthScale]);
 
+  const roundedUGeometry = useMemo(() => {
+    const uShape = createUShape(0.26, 0.26, 0.08, 0.035);
+    const geometry = new THREE.ExtrudeGeometry(uShape, {
+      depth: 0.05 * depthScale,
+      steps: 1,
+      bevelEnabled: true,
+      bevelSegments: Math.max(1, Math.round(bevelSegments)),
+      bevelSize: Math.max(0.002, bevelThickness),
+      bevelThickness: Math.max(0.001, bevelThickness),
+      bevelOffset,
+      curveSegments: Math.max(8, Math.round(bevelSegments) * 3),
+    });
+    geometry.center();
+
+    return geometry;
+  }, [bevelOffset, bevelSegments, bevelThickness, depthScale]);
+
   useEffect(() => {
     return () => {
       roundedTriangleGeometry.dispose();
+      roundedUGeometry.dispose();
     };
-  }, [roundedTriangleGeometry]);
+  }, [roundedTriangleGeometry, roundedUGeometry]);
 
   const materialProps = useMemo(() => {
     return {
@@ -269,6 +364,17 @@ export default function CustomCursor() {
       >
         <MeshTransmissionMaterial {...materialProps} />
       </Capsule>
+
+      <mesh
+        position={[0.5, 0.5, 0]}
+        geometry={roundedUGeometry}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+      >
+        <MeshTransmissionMaterial {...materialProps} />
+      </mesh>
     </group>
   );
 }

@@ -1,14 +1,10 @@
 import { useRef } from "react";
-import { useFrame, useThree } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
-import { easing } from "maath";
 
 function AnimateCamera() {
-  const camera = useThree((state) => state.camera);
   const orbitControlsRef = useRef();
-  useFrame((state, delta) => {
-    easing.damp(state.camera.position, "x", -state.pointer.x * 4.5, 0.7, delta);
-    easing.damp(state.camera.position, "y", -state.pointer.y * 2.5, 0.7, delta);
+  useFrame(() => {
     if (orbitControlsRef.current) {
       orbitControlsRef.current.update();
     }

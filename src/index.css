@@ -17,7 +17,7 @@
 #root {
   width: 100vw;
   height: 100vh;
-  cursor: none;
+  cursor: default;
 }
 
 body {
@@ -28,7 +28,7 @@ body {
   user-select: none;
   overflow: hidden;
   overscroll-behavior: none;
-  cursor: none;
+  cursor: default;
 }
 
 canvas {
@@ -36,7 +36,7 @@ canvas {
   top: 0;
   left: 0;
   z-index: -1;
-  cursor: none;
+  cursor: default;
 }
 
 .main-container {
@@ -92,6 +92,18 @@ canvas {
   grid-column: 1 / -1;
   width: 100%;
   margin: 0;
+}
+
+.parameter-panel__select {
+  grid-column: 1 / -1;
+  width: 100%;
+  margin: 0;
+  height: 1.75rem;
+  border-radius: 0.35rem;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  padding: 0 0.4rem;
 }
 
 @media (max-width: 768px) {

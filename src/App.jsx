@@ -1,5 +1,9 @@
 import React, { Suspense } from "react";
 import { Canvas, extend } from "@react-three/fiber";
+import {
+  PerspectiveCamera,
+  OrthographicCamera,
+} from "@react-three/drei";
 import Scene from "./components/Scene";
 import AnimateCamera from "./components/AnimateCamera";
 import Clock from "./components/Clock";
@@ -30,19 +34,41 @@ const createRenderer = async (props) => {
   return renderer;
 };
 
-function App() {
+function CameraManager() {
   const { cameraMode } = useSnapshot(state);
   const useOrthographic = cameraMode === "orthographic";
 
+  return (
+    <>
+      <PerspectiveCamera
+        makeDefault={!useOrthographic}
+        near={0.01}
+        far={1000}
+        fov={5}
+        position={[0, 0, 25]}
+      />
+      <OrthographicCamera
+        makeDefault={useOrthographic}
+        near={0.01}
+        far={1000}
+        zoom={400}
+        position={[0, 0, 25]}
+      />
+    </>
+  );
+}
+
+function App() {
   return (
     <div className="main-container">
       <LoadingScreen />
       <ParameterPanel />
       <Canvas
-        key={`camera-${cameraMode}`}
-        {...getCanvasProps(useOrthographic)}
+        gl={createRenderer}
+        dpr={[1, 1.5]}
       >
         <Suspense fallback={null}>
+          <CameraManager />
           <Clock />
           <Settings />
           <Scene />
@@ -57,20 +83,3 @@ function App() {
 }
 
 export default App;
-
-const perspectiveCamera = { near: 0.01, far: 1000, fov: 5, position: [0, 0, 25] };
-const orthographicCamera = {
-  near: 0.01,
-  far: 1000,
-  zoom: 400,
-  position: [0, 0, 25],
-};
-
-function getCanvasProps(useOrthographic) {
-  return {
-    gl: createRenderer,
-    dpr: [1, 1.5],
-    orthographic: useOrthographic,
-    camera: useOrthographic ? orthographicCamera : perspectiveCamera,
-  };
-}

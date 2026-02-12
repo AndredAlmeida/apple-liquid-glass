@@ -52,8 +52,8 @@ const controls = [
   {
     key: "cameraYAngle",
     label: "Camera Y Angle",
-    min: -45,
-    max: 45,
+    min: -90,
+    max: 90,
     step: 1,
     integer: true,
   },

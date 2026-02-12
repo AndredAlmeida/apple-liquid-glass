@@ -15,7 +15,7 @@ function AnimateCamera() {
 
   useFrame((r3fState, delta) => {
     const angleInRadians = THREE.MathUtils.degToRad(
-      THREE.MathUtils.clamp(cameraYAngle, -45, 45)
+      THREE.MathUtils.clamp(cameraYAngle, -90, 90)
     );
     const cameraRadius = Math.max(0.1, BASE_CAMERA_DISTANCE - cursorCenterZ);
     const desiredPosition = [

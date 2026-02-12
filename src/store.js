@@ -16,6 +16,10 @@ const state = proxy({
   textRoughness: 0.23,
   sampleSize: "medium",
   cameraMode: "perspective",
+  cameraYAngle: 0,
+  cursorCenterX: 0,
+  cursorCenterY: 0,
+  cursorCenterZ: 0.1,
 });
 
 export { state };

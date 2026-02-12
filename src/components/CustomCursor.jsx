@@ -6,6 +6,12 @@ import { state } from "../store";
 
 const DRAG_Z = 0.1;
 
+function syncCursorCenter(position) {
+  state.cursorCenterX = position.x;
+  state.cursorCenterY = position.y;
+  state.cursorCenterZ = position.z;
+}
+
 export default function CustomCursor() {
   const groupRef = useRef();
   const dragOffsetRef = useRef(new THREE.Vector3());
@@ -19,6 +25,8 @@ export default function CustomCursor() {
   );
 
   useEffect(() => {
+    syncCursorCenter(new THREE.Vector3(0, 0, DRAG_Z));
+
     const endDrag = () => {
       setIsDraggingObjects(false);
       state.isDragging = false;

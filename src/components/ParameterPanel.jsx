@@ -49,6 +49,14 @@ const controls = [
     max: 1,
     step: 0.01,
   },
+  {
+    key: "cameraYAngle",
+    label: "Camera Y Angle",
+    min: -45,
+    max: 45,
+    step: 1,
+    integer: true,
+  },
 ];
 
 function formatValue(value, integer) {

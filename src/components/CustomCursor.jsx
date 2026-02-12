@@ -17,8 +17,15 @@ export default function CustomCursor() {
   const dragOffsetRef = useRef(new THREE.Vector3());
   const dragPointRef = useRef(new THREE.Vector3());
   const [isDraggingObjects, setIsDraggingObjects] = useState(false);
-  const { reflectivity, textIor, textThickness, textRoughness, sampleSize } =
-    useSnapshot(state);
+  const {
+    reflectivity,
+    textIor,
+    textThickness,
+    textRoughness,
+    sampleSize,
+    bevelSegments,
+    bevelOffset,
+  } = useSnapshot(state);
   const dragPlane = useMemo(
     () => new THREE.Plane(new THREE.Vector3(0, 0, 1), -DRAG_Z),
     []
@@ -104,6 +111,23 @@ export default function CustomCursor() {
     return 4;
   }, [sampleSize]);
 
+  const geometryDetail = useMemo(() => {
+    const detail = Math.max(0, Math.round(bevelSegments));
+    const radialSegments = Math.max(8, detail * 4);
+    const sphereHeightSegments = Math.max(6, detail * 4);
+    const capsuleCapSegments = Math.max(2, detail * 2);
+
+    return { radialSegments, sphereHeightSegments, capsuleCapSegments };
+  }, [bevelSegments]);
+
+  const geometryDimensions = useMemo(() => {
+    const sphereRadius = Math.max(0.02, 0.1 + bevelOffset);
+    const capsuleRadius = Math.max(0.02, 0.1 + bevelOffset);
+    const capsuleLength = Math.max(0.05, 0.3 + bevelOffset * 2);
+
+    return { sphereRadius, capsuleRadius, capsuleLength };
+  }, [bevelOffset]);
+
   const materialProps = useMemo(() => {
     return {
       color: "white",
@@ -127,7 +151,11 @@ export default function CustomCursor() {
     <group ref={groupRef} position={[0, 0, DRAG_Z]}>
       <Sphere
         scale={[2, 2, 0.24]}
-        args={[0.1, 64, 64]}
+        args={[
+          geometryDimensions.sphereRadius,
+          geometryDetail.radialSegments,
+          geometryDetail.sphereHeightSegments,
+        ]}
         position={[-0.5, 0, 0]}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -139,7 +167,12 @@ export default function CustomCursor() {
 
       <Capsule
         scale={[2, 2, 2]}
-        args={[0.1, 0.3, 64, 64]}
+        args={[
+          geometryDimensions.capsuleRadius,
+          geometryDimensions.capsuleLength,
+          geometryDetail.capsuleCapSegments,
+          geometryDetail.radialSegments,
+        ]}
         position={[0.5, 0, 0]}
         rotation={[0, 0, -Math.PI / 2]}
         onPointerDown={handlePointerDown}

@@ -13,11 +13,6 @@ export default defineConfig({
       target: 'esnext',
     },
   },
-  resolve: {
-    alias: {
-      'three': 'three/webgpu',
-    },
-  },
   server: {
     host: true,
     port: 5173,

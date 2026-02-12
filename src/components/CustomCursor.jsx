@@ -1,6 +1,8 @@
-import { Capsule, Sphere, useEnvironment } from "@react-three/drei";
+import { Capsule, Sphere } from "@react-three/drei";
+import { useLoader } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three/webgpu";
+import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 import { useSnapshot } from "valtio";
 import { state } from "../store";
 
@@ -135,7 +137,8 @@ export default function CustomCursor() {
   const groupRef = useRef();
   const dragOffsetRef = useRef(new THREE.Vector3());
   const dragPointRef = useRef(new THREE.Vector3());
-  const warehouseEnvMap = useEnvironment({ preset: "warehouse" });
+  const warehouseEnvMap = useLoader(RGBELoader, "/empty_warehouse_01_1k.hdr");
+  warehouseEnvMap.mapping = THREE.EquirectangularReflectionMapping;
   const [isDraggingObjects, setIsDraggingObjects] = useState(false);
   const {
     reflectivity,

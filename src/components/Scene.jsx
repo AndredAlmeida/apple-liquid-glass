@@ -1,16 +1,23 @@
-import React, { Suspense } from "react";
-import { Environment, useEnvironment } from "@react-three/drei";
+import { useEffect } from "react";
+import { useThree, useLoader } from "@react-three/fiber";
+import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
+import * as THREE from "three/webgpu";
 
 function Scene() {
-  const warehouseEnvMap = useEnvironment({ preset: "warehouse" });
+  const envMap = useLoader(RGBELoader, "/empty_warehouse_01_1k.hdr");
+  envMap.mapping = THREE.EquirectangularReflectionMapping;
 
-  return (
-    <>
-      <Suspense fallback={null}>
-        <Environment map={warehouseEnvMap} environmentIntensity={0.25} />
-      </Suspense>
-    </>
-  );
+  const scene = useThree((state) => state.scene);
+
+  useEffect(() => {
+    scene.environment = envMap;
+    scene.environmentIntensity = 0.25;
+    return () => {
+      scene.environment = null;
+    };
+  }, [envMap, scene]);
+
+  return null;
 }
 
 export default Scene;

@@ -7,6 +7,8 @@ const state = proxy({
   showSettings: false,
   background: "video3",
   reflectivity: 0.45,
+  glassReflectionEnabled: true,
+  glassReflectionOpacity: 0.05,
   isDragging: false,
   display: "grid",
   bevelSegments: 20,

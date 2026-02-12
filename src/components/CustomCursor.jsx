@@ -1,4 +1,4 @@
-import { Capsule, Sphere } from "@react-three/drei";
+import { Capsule, Sphere, useEnvironment } from "@react-three/drei";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three/webgpu";
 import { useSnapshot } from "valtio";
@@ -135,6 +135,7 @@ export default function CustomCursor() {
   const groupRef = useRef();
   const dragOffsetRef = useRef(new THREE.Vector3());
   const dragPointRef = useRef(new THREE.Vector3());
+  const warehouseEnvMap = useEnvironment({ preset: "warehouse" });
   const [isDraggingObjects, setIsDraggingObjects] = useState(false);
   const {
     reflectivity,
@@ -146,6 +147,8 @@ export default function CustomCursor() {
     bevelThickness,
     extrudeDepth,
     glassTintColor,
+    glassReflectionEnabled,
+    glassReflectionOpacity,
   } = useSnapshot(state);
   const dragPlane = useMemo(
     () => new THREE.Plane(new THREE.Vector3(0, 0, 1), -DRAG_Z),
@@ -298,6 +301,8 @@ export default function CustomCursor() {
       ior: textIor,
       thickness: textThickness,
       reflectivity,
+      envMap: warehouseEnvMap,
+      envMapIntensity: glassReflectionEnabled ? glassReflectionOpacity : 0,
       clearcoat: 0.4,
       clearcoatRoughness: 0.05,
       iridescence: 0.9,
@@ -305,7 +310,16 @@ export default function CustomCursor() {
       iridescenceThicknessRange: [0, 140],
       dispersion: 5,
     };
-  }, [reflectivity, textIor, textThickness, textRoughness, glassTintColor]);
+  }, [
+    reflectivity,
+    textIor,
+    textThickness,
+    textRoughness,
+    glassTintColor,
+    glassReflectionEnabled,
+    glassReflectionOpacity,
+    warehouseEnvMap,
+  ]);
 
   return (
     <group ref={groupRef} position={[0, 0, DRAG_Z]}>

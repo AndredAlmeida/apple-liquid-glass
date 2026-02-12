@@ -145,6 +145,37 @@ export default function ParameterPanel() {
       </label>
 
       <label className="parameter-panel__row">
+        <span className="parameter-panel__label">Reflection Map</span>
+        <input
+          className="parameter-panel__checkbox"
+          type="checkbox"
+          checked={values.glassReflectionEnabled}
+          onChange={(event) => {
+            state.glassReflectionEnabled = event.target.checked;
+          }}
+        />
+      </label>
+
+      <label className="parameter-panel__row">
+        <span className="parameter-panel__label">Reflection Opacity</span>
+        <span className="parameter-panel__value">
+          {formatValue(values.glassReflectionOpacity)}
+        </span>
+        <input
+          className="parameter-panel__slider"
+          type="range"
+          min={0}
+          max={1}
+          step={0.01}
+          value={values.glassReflectionOpacity}
+          disabled={!values.glassReflectionEnabled}
+          onChange={(event) => {
+            state.glassReflectionOpacity = Number(event.target.value);
+          }}
+        />
+      </label>
+
+      <label className="parameter-panel__row">
         <span className="parameter-panel__label">Camera</span>
         <span className="parameter-panel__value">
           {cameraModes.find((option) => option.value === values.cameraMode)?.label}

@@ -11,6 +11,7 @@ export default function Clock() {
     display,
     bevelSegments,
     bevelOffset,
+    bevelThickness,
     textIor,
     textThickness,
     textRoughness,
@@ -49,7 +50,7 @@ export default function Clock() {
               bevelSize={isMobile ? 0.012 : 0.016}
               bevelSegments={bevelSegments}
               bevelOffset={bevelOffset}
-              bevelThickness={0.03}
+              bevelThickness={bevelThickness}
               font={"/fonts/Morganite_Medium.json"}
             >
               {time}

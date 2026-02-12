@@ -29,6 +29,13 @@ const controls = [
     step: 0.001,
   },
   {
+    key: "bevelThickness",
+    label: "Bevel Thickness",
+    min: 0,
+    max: 0.1,
+    step: 0.001,
+  },
+  {
     key: "textIor",
     label: "IOR",
     min: 1,

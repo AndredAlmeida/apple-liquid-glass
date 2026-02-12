@@ -11,6 +11,7 @@ const state = proxy({
   display: "grid",
   bevelSegments: 8,
   bevelOffset: 0,
+  bevelThickness: 0.03,
   textIor: 1.8,
   textThickness: 2,
   textRoughness: 0.23,

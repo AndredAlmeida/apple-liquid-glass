@@ -25,6 +25,7 @@ export default function CustomCursor() {
     sampleSize,
     bevelSegments,
     bevelOffset,
+    bevelThickness,
     extrudeDepth,
   } = useSnapshot(state);
   const dragPlane = useMemo(
@@ -122,12 +123,19 @@ export default function CustomCursor() {
   }, [bevelSegments]);
 
   const geometryDimensions = useMemo(() => {
-    const sphereRadius = Math.max(0.02, 0.1 + bevelOffset);
-    const capsuleRadius = Math.max(0.02, 0.1 + bevelOffset);
-    const capsuleLength = Math.max(0.05, 0.3 + bevelOffset * 2);
+    const thicknessAmount = Math.max(0, bevelThickness);
+    const sphereRadius = Math.max(0.02, 0.1 + bevelOffset + thicknessAmount * 0.75);
+    const capsuleRadius = Math.max(
+      0.02,
+      0.1 + bevelOffset + thicknessAmount * 0.75
+    );
+    const capsuleLength = Math.max(
+      0.05,
+      0.3 + bevelOffset * 2 + thicknessAmount * 1.5
+    );
 
     return { sphereRadius, capsuleRadius, capsuleLength };
-  }, [bevelOffset]);
+  }, [bevelOffset, bevelThickness]);
 
   const depthScale = useMemo(() => Math.max(0.1, extrudeDepth), [extrudeDepth]);
 

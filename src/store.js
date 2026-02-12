@@ -16,6 +16,7 @@ const state = proxy({
   extrudeDepth: 1.5,
   glassTintColor: "#ffffff",
   cameraMode: "perspective",
+  noiseEnabled: false,
   noiseScale: 5,
   noiseDepth: 0,
   cameraYAngle: 0,

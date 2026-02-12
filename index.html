@@ -141,15 +141,20 @@
         </label>
 
         <label class="parameter-panel__row">
+          <span class="parameter-panel__label">Noise Distortion</span>
+          <input class="parameter-panel__checkbox" type="checkbox" data-key="noiseEnabled" />
+        </label>
+
+        <label class="parameter-panel__row">
           <span class="parameter-panel__label">Noise Scale</span>
           <span class="parameter-panel__value" id="val-noiseScale">5</span>
-          <input class="parameter-panel__slider" type="range" min="0.1" max="50" step="0.1" value="5" data-key="noiseScale" />
+          <input class="parameter-panel__slider" type="range" min="0.1" max="50" step="0.1" value="5" data-key="noiseScale" disabled />
         </label>
 
         <label class="parameter-panel__row">
           <span class="parameter-panel__label">Noise Depth</span>
           <span class="parameter-panel__value" id="val-noiseDepth">0</span>
-          <input class="parameter-panel__slider" type="range" min="0" max="1" step="0.01" value="0" data-key="noiseDepth" />
+          <input class="parameter-panel__slider" type="range" min="0" max="1" step="0.01" value="0" data-key="noiseDepth" disabled />
         </label>
 
         <label class="parameter-panel__row">

@@ -35,17 +35,25 @@ export function setupParameterPanel() {
     });
   }
 
-  // Wire up checkbox
-  const checkbox = panel.querySelector("input[type='checkbox']");
-  if (checkbox) {
+  // Wire up all checkboxes by data-key
+  panel.querySelectorAll("input[type='checkbox']").forEach((checkbox) => {
+    const key = checkbox.dataset.key;
     checkbox.addEventListener("change", () => {
-      state.glassReflectionEnabled = checkbox.checked;
+      state[key] = checkbox.checked;
 
-      // Enable/disable the reflection opacity slider
-      const opacitySlider = panel.querySelector("input[data-key='glassReflectionOpacity']");
-      if (opacitySlider) opacitySlider.disabled = !checkbox.checked;
+      // Enable/disable dependent sliders
+      if (key === "glassReflectionEnabled") {
+        const opacitySlider = panel.querySelector("input[data-key='glassReflectionOpacity']");
+        if (opacitySlider) opacitySlider.disabled = !checkbox.checked;
+      }
+      if (key === "noiseEnabled") {
+        const scaleSlider = panel.querySelector("input[data-key='noiseScale']");
+        const depthSlider = panel.querySelector("input[data-key='noiseDepth']");
+        if (scaleSlider) scaleSlider.disabled = !checkbox.checked;
+        if (depthSlider) depthSlider.disabled = !checkbox.checked;
+      }
     });
-  }
+  });
 
   // Wire up select
   const select = panel.querySelector("select");

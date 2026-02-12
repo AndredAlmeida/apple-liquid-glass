@@ -272,7 +272,7 @@ export function updateGlassMaterials(meshes) {
   glassUniforms.reflectivity.value = state.reflectivity;
   glassUniforms.envMapIntensity.value = state.glassReflectionEnabled ? state.glassReflectionOpacity : 0;
   glassUniforms.noiseScale.value = state.noiseScale;
-  glassUniforms.noiseDepth.value = state.noiseDepth;
+  glassUniforms.noiseDepth.value = state.noiseEnabled ? state.noiseDepth : 0;
 
   // These properties don't have node equivalents — set directly
   for (const mesh of meshes) {

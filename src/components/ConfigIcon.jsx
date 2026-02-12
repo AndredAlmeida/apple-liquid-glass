@@ -2,11 +2,14 @@ import {
   Circle,
   MeshDiscardMaterial,
   Plane,
-  Text,
+  Center,
   useTexture,
 } from "@react-three/drei";
+import { Text } from "three-text/three/react";
 import { useSnapshot } from "valtio";
 import { state } from "../store";
+
+Text.setHarfBuzzPath("/hb/hb.wasm");
 
 export default function ConfigIcon() {
   const texture = useTexture("/config-icon.png");
@@ -32,15 +35,20 @@ export default function ConfigIcon() {
         <meshBasicMaterial map={texture} transparent />
       </Circle>
 
-      <Text
-        fontSize={0.1}
-        position={showSettings ? [0, -0.915, 0] : [0.03, -0.915, 0]}
-        color="white"
-        font="fonts/Morganite-Medium.ttf"
-        visible={hovered || showSettings}
-      >
-        {showSettings ? "CLOSE SETTINGS" : "OPEN SETTINGS"}
-      </Text>
+      <group visible={hovered || showSettings}>
+        <Center
+          position={showSettings ? [0, -0.915, 0] : [0.03, -0.915, 0]}
+        >
+          <Text
+            size={0.1}
+            depth={0}
+            font="/fonts/Morganite-Medium.ttf"
+            color={[1, 1, 1]}
+          >
+            {showSettings ? "CLOSE SETTINGS" : "OPEN SETTINGS"}
+          </Text>
+        </Center>
+      </group>
     </group>
   );
 }

@@ -1,8 +1,11 @@
-import { Center, Text3D, Text } from "@react-three/drei";
-import { useState, useEffect, useRef } from "react";
+import { Center, Text3D } from "@react-three/drei";
+import { Text } from "three-text/three/react";
+import { useState, useEffect } from "react";
 import { useSnapshot } from "valtio";
 import { state } from "../store";
 import { useTexture } from "@react-three/drei";
+
+Text.setHarfBuzzPath("/hb/hb.wasm");
 
 export default function Clock() {
   const {
@@ -45,7 +48,6 @@ export default function Clock() {
               size={isMobile ? 0.7 : 1.2}
               letterSpacing={-0.005}
               height={0.08}
-              // curveSegments={24}
               bevelEnabled
               bevelSize={isMobile ? 0.012 : 0.016}
               bevelSegments={bevelSegments}
@@ -57,7 +59,7 @@ export default function Clock() {
               <meshPhysicalMaterial
                 color="white"
                 roughness={textRoughness}
-                transmission
+                transmission={1}
                 ior={textIor}
                 thickness={textThickness}
                 reflectivity={0.4}
@@ -75,20 +77,20 @@ export default function Clock() {
             key={time + "1"}
           >
             <Text
-              fontSize={isMobile ? 0.2 : 0.2}
-              anchorX="left"
-              anchorY="middle"
-              font="fonts/Morganite-ExtraLight.ttf"
+              size={isMobile ? 0.2 : 0.2}
+              depth={0}
+              font="/fonts/Morganite-ExtraLight.ttf"
+              color={[1, 1, 1]}
             >
               APPLE LIQUID GLASS THREEJS
             </Text>
 
             <Text
+              size={isMobile ? 0.08 : 0.08}
+              depth={0}
               position={[0.2, 0.15, 0]}
-              fontSize={isMobile ? 0.08 : 0.08}
-              anchorX="left"
-              anchorY="middle"
-              font="fonts/Morganite-Medium.ttf"
+              font="/fonts/Morganite-Medium.ttf"
+              color={[1, 1, 1]}
             >
               CREATED BY ANDERSON MANCINI
             </Text>

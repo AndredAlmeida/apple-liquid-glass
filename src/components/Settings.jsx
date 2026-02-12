@@ -4,16 +4,18 @@ import {
   Center,
   Plane,
   Sphere,
-  Text,
   useTexture,
   MeshDiscardMaterial,
 } from "@react-three/drei";
+import { Text } from "three-text/three/react";
 import { useFrame } from "@react-three/fiber";
 import ConfigIcon from "./ConfigIcon";
 import { useSnapshot } from "valtio";
 import { state } from "../store";
 import { useMemo, useRef, useState } from "react";
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
+
+Text.setHarfBuzzPath("/hb/hb.wasm");
 
 export default function Settings() {
   const { showSettings } = useSnapshot(state);
@@ -46,11 +48,11 @@ function BackgroundOptions() {
   const { isMobile, display } = useSnapshot(state);
 
   const buttonsMaterial = useMemo(() => {
-    return new THREE.MeshPhysicalMaterial({
+    return new THREE.MeshPhysicalNodeMaterial({
       color: "white",
       metalness: 0,
       roughness: 0.28,
-      transmission: true,
+      transmission: 1,
       ior: 1.2,
       thickness: 0.5,
       dispersion: 12,
@@ -66,15 +68,16 @@ function BackgroundOptions() {
       material={buttonsMaterial}
       onClick={onClick}
     >
-      <Text
-        anchorX="center"
-        anchorY="middle"
-        font="fonts/Morganite-Medium.ttf"
-        position={[0, 0, 0.15]}
-        fontSize={0.1}
-      >
-        {number}
-      </Text>
+      <Center position={[0, 0, 0.15]}>
+        <Text
+          size={0.1}
+          depth={0}
+          font="/fonts/Morganite-Medium.ttf"
+          color={[1, 1, 1]}
+        >
+          {number}
+        </Text>
+      </Center>
     </Sphere>
   );
 
@@ -96,14 +99,17 @@ function BackgroundOptions() {
   return (
     <>
       <group position={isMobile ? [0, 0.2, 0] : [0, 0.2, 0]}>
-        <Text
-          fontSize={0.1}
-          position={[0, -0.25, -0.1]}
-          letterSpacing={0.02}
-          font="fonts/Morganite-Medium.ttf"
-        >
-          BACKGROUND OPTIONS
-        </Text>
+        <Center position={[0, -0.25, -0.1]}>
+          <Text
+            size={0.1}
+            depth={0}
+            letterSpacing={0.02}
+            font="/fonts/Morganite-Medium.ttf"
+            color={[1, 1, 1]}
+          >
+            BACKGROUND OPTIONS
+          </Text>
+        </Center>
         <Center position={[0.45, -0.15, 0]}>
           <BackgroundButton
             number="1"
@@ -139,14 +145,17 @@ function BackgroundOptions() {
       </group>
 
       <group position={isMobile ? [0, 0.2, 0] : [0, 0.25, 0]}>
-        <Text
-          fontSize={0.1}
-          letterSpacing={0.02}
-          position={[0, 0.2, -0.1]}
-          font="fonts/Morganite-Medium.ttf"
-        >
-          DISPLAY OPTIONS
-        </Text>
+        <Center position={[0, 0.2, -0.1]}>
+          <Text
+            size={0.1}
+            depth={0}
+            letterSpacing={0.02}
+            font="/fonts/Morganite-Medium.ttf"
+            color={[1, 1, 1]}
+          >
+            DISPLAY OPTIONS
+          </Text>
+        </Center>
 
         {/* GRID */}
         <Sphere
@@ -235,14 +244,17 @@ function ReflectivitySlider() {
 
   return (
     <group position={isMobile ? [0, 0.2, -0.1] : [0, 0.2, -0.1]}>
-      <Text
-        fontSize={0.1}
-        letterSpacing={0.02}
-        position={[0, 0.625, -0.1]}
-        font="fonts/Morganite-Medium.ttf"
-      >
-        CURSOR GLASS THICKNESS: {reflectivity.toFixed(2)}
-      </Text>
+      <Center position={[0, 0.625, -0.1]}>
+        <Text
+          size={0.1}
+          depth={0}
+          letterSpacing={0.02}
+          font="/fonts/Morganite-Medium.ttf"
+          color={[1, 1, 1]}
+        >
+          {`CURSOR GLASS THICKNESS: ${reflectivity.toFixed(2)}`}
+        </Text>
+      </Center>
       <group position={[0, 0.5, 0]}>
         {/* SLIDER */}
         <Plane

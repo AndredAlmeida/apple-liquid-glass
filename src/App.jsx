@@ -10,13 +10,21 @@ import * as THREE from "three";
 import LoadingScreen from "./components/LoadingScreen/LoadingScreen";
 import Settings from "./components/Settings";
 import ParameterPanel from "./components/ParameterPanel";
+import { useSnapshot } from "valtio";
+import { state } from "./store";
 
 function App() {
+  const { cameraMode } = useSnapshot(state);
+  const useOrthographic = cameraMode === "orthographic";
+
   return (
     <div className="main-container">
       <LoadingScreen />
       <ParameterPanel />
-      <Canvas {...canvasProps}>
+      <Canvas
+        key={`camera-${cameraMode}`}
+        {...getCanvasProps(useOrthographic)}
+      >
         <Suspense fallback={null}>
           <Clock />
           <Settings />
@@ -33,7 +41,7 @@ function App() {
 
 export default App;
 
-const canvasProps = {
+const baseCanvasProps = {
   gl: {
     antialias: true,
     powerPreference: "high-performance",
@@ -42,6 +50,21 @@ const canvasProps = {
     alpha: false,
     toneMapping: THREE.NeutralToneMapping,
   },
-  camera: { near: 0.01, far: 1000, fov: 5, position: [0, 0, 25] },
   dpr: [1, 1.5],
 };
+
+const perspectiveCamera = { near: 0.01, far: 1000, fov: 5, position: [0, 0, 25] };
+const orthographicCamera = {
+  near: 0.01,
+  far: 1000,
+  zoom: 400,
+  position: [0, 0, 25],
+};
+
+function getCanvasProps(useOrthographic) {
+  return {
+    ...baseCanvasProps,
+    orthographic: useOrthographic,
+    camera: useOrthographic ? orthographicCamera : perspectiveCamera,
+  };
+}

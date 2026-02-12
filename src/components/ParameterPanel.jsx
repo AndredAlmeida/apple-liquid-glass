@@ -7,6 +7,11 @@ const sampleSizes = [
   { value: "high", label: "High" },
 ];
 
+const cameraModes = [
+  { value: "perspective", label: "Perspective" },
+  { value: "orthographic", label: "Orthographic" },
+];
+
 const controls = [
   {
     key: "bevelSegments",
@@ -59,7 +64,7 @@ export default function ParameterPanel() {
 
   return (
     <div className="parameter-panel">
-      <p className="parameter-panel__title">Text Parameters</p>
+      <p className="parameter-panel__title">Parameters</p>
 
       {controls.map((control) => (
         <label className="parameter-panel__row" key={control.key}>
@@ -97,6 +102,26 @@ export default function ParameterPanel() {
           }}
         >
           {sampleSizes.map((option) => (
+            <option value={option.value} key={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label className="parameter-panel__row">
+        <span className="parameter-panel__label">Camera</span>
+        <span className="parameter-panel__value">
+          {cameraModes.find((option) => option.value === values.cameraMode)?.label}
+        </span>
+        <select
+          className="parameter-panel__select"
+          value={values.cameraMode}
+          onChange={(event) => {
+            state.cameraMode = event.target.value;
+          }}
+        >
+          {cameraModes.map((option) => (
             <option value={option.value} key={option.value}>
               {option.label}
             </option>

@@ -15,6 +15,7 @@ const state = proxy({
   textThickness: 2,
   textRoughness: 0.23,
   sampleSize: "medium",
+  cameraMode: "perspective",
 });
 
 export { state };

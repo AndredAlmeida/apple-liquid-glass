@@ -6,13 +6,12 @@ import {
 } from "@react-three/drei";
 import Scene from "./components/Scene";
 import AnimateCamera from "./components/AnimateCamera";
-import Clock from "./components/Clock";
 import BackgroundImageCover from "./components/BackgroundImageCover";
+import GridDisplay from "./components/GridDisplay";
 import DynamicLights from "./components/DynamicLights";
 import CustomCursor from "./components/CustomCursor";
 import * as THREE from "three/webgpu";
 import LoadingScreen from "./components/LoadingScreen/LoadingScreen";
-import Settings from "./components/Settings";
 import ParameterPanel from "./components/ParameterPanel";
 import { useSnapshot } from "valtio";
 import { state } from "./store";
@@ -69,8 +68,7 @@ function App() {
       >
         <Suspense fallback={null}>
           <CameraManager />
-          <Clock />
-          <Settings />
+          <GridDisplay />
           <Scene />
           <CustomCursor />
           <AnimateCamera />

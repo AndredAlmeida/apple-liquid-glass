@@ -1,12 +1,6 @@
 import { useSnapshot } from "valtio";
 import { state } from "../store";
 
-const sampleSizes = [
-  { value: "low", label: "Low" },
-  { value: "medium", label: "Medium" },
-  { value: "high", label: "High" },
-];
-
 const cameraModes = [
   { value: "perspective", label: "Perspective" },
   { value: "orthographic", label: "Orthographic" },
@@ -122,26 +116,6 @@ export default function ParameterPanel() {
             state.glassTintColor = event.target.value;
           }}
         />
-      </label>
-
-      <label className="parameter-panel__row">
-        <span className="parameter-panel__label">SampleSize</span>
-        <span className="parameter-panel__value">
-          {sampleSizes.find((option) => option.value === values.sampleSize)?.label}
-        </span>
-        <select
-          className="parameter-panel__select"
-          value={values.sampleSize}
-          onChange={(event) => {
-            state.sampleSize = event.target.value;
-          }}
-        >
-          {sampleSizes.map((option) => (
-            <option value={option.value} key={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
       </label>
 
       <label className="parameter-panel__row">

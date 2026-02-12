@@ -1,11 +1,13 @@
 import React, { Suspense } from "react";
-import { Environment } from "@react-three/drei";
+import { Environment, useEnvironment } from "@react-three/drei";
 
 function Scene() {
+  const warehouseEnvMap = useEnvironment({ preset: "warehouse" });
+
   return (
     <>
       <Suspense fallback={null}>
-        <Environment preset={"warehouse"} environmentIntensity={0.25} />
+        <Environment map={warehouseEnvMap} environmentIntensity={0.25} />
       </Suspense>
     </>
   );

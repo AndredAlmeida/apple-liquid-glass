@@ -1,7 +1,7 @@
 import * as THREE from "three/webgpu";
 import {
   uniform,
-  normalLocal,
+  normalView,
   positionLocal,
   normalize,
   mx_noise_vec3,
@@ -101,11 +101,12 @@ const glassUniforms = {
   noiseDepth: uniform(state.noiseDepth),
 };
 
-// TSL node: perturb geometry normal with perlin noise
+// TSL node: perturb view-space normal with perlin noise
+// normalNode assigns directly to transformedNormalView, so must be in view space
 const noisyNormal = (() => {
   const scaledPos = positionLocal.mul(glassUniforms.noiseScale);
   const noise = mx_noise_vec3(scaledPos);
-  return normalize(normalLocal.add(noise.mul(glassUniforms.noiseDepth)));
+  return normalize(normalView.add(noise.mul(glassUniforms.noiseDepth)));
 })();
 
 function createGlassMaterial(envMap) {

@@ -1,6 +1,6 @@
-import { Capsule, MeshTransmissionMaterial, Sphere } from "@react-three/drei";
+import { Capsule, Sphere } from "@react-three/drei";
 import { useEffect, useMemo, useRef, useState } from "react";
-import * as THREE from "three";
+import * as THREE from "three/webgpu";
 import { useSnapshot } from "valtio";
 import { state } from "../store";
 
@@ -141,7 +141,6 @@ export default function CustomCursor() {
     textIor,
     textThickness,
     textRoughness,
-    sampleSize,
     bevelSegments,
     bevelOffset,
     bevelThickness,
@@ -222,16 +221,6 @@ export default function CustomCursor() {
     event.target.releasePointerCapture?.(event.pointerId);
   };
 
-  const sampleCount = useMemo(() => {
-    if (sampleSize === "low") {
-      return 2;
-    }
-    if (sampleSize === "high") {
-      return 8;
-    }
-    return 4;
-  }, [sampleSize]);
-
   const geometryDetail = useMemo(() => {
     const detail = Math.max(0, Math.round(bevelSegments));
     const radialSegments = Math.max(8, detail * 4);
@@ -304,19 +293,18 @@ export default function CustomCursor() {
       color: "white",
       metalness: 0,
       roughness: textRoughness,
+      transmission: 1,
       ior: textIor,
       thickness: textThickness,
       reflectivity,
-      chromaticAberration: 0.1,
       clearcoat: 0.4,
-      resolution: 1024,
       clearcoatRoughness: 0.05,
       iridescence: 0.9,
       iridescenceIOR: 0.1,
       iridescenceThicknessRange: [0, 140],
-      samples: sampleCount,
+      dispersion: 5,
     };
-  }, [reflectivity, textIor, textThickness, textRoughness, sampleCount]);
+  }, [reflectivity, textIor, textThickness, textRoughness]);
 
   return (
     <group ref={groupRef} position={[0, 0, DRAG_Z]}>
@@ -333,7 +321,7 @@ export default function CustomCursor() {
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
       >
-        <MeshTransmissionMaterial {...materialProps} />
+        <meshPhysicalMaterial {...materialProps} />
       </Sphere>
 
       <mesh
@@ -344,7 +332,7 @@ export default function CustomCursor() {
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
       >
-        <MeshTransmissionMaterial {...materialProps} />
+        <meshPhysicalMaterial {...materialProps} />
       </mesh>
 
       <Capsule
@@ -362,7 +350,7 @@ export default function CustomCursor() {
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
       >
-        <MeshTransmissionMaterial {...materialProps} />
+        <meshPhysicalMaterial {...materialProps} />
       </Capsule>
 
       <mesh
@@ -373,7 +361,7 @@ export default function CustomCursor() {
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
       >
-        <MeshTransmissionMaterial {...materialProps} />
+        <meshPhysicalMaterial {...materialProps} />
       </mesh>
     </group>
   );

@@ -1,8 +1,7 @@
-import { proxy } from "valtio";
+import { proxy } from "valtio/vanilla";
 
 const state = proxy({
   isMobile: window.innerWidth < 768,
-  finishedLoadingAsset: false,
   background: "video3",
   reflectivity: 0.45,
   glassReflectionEnabled: true,
@@ -18,9 +17,6 @@ const state = proxy({
   glassTintColor: "#ffffff",
   cameraMode: "perspective",
   cameraYAngle: 0,
-  cursorCenterX: 0,
-  cursorCenterY: 0,
-  cursorCenterZ: 0.1,
 });
 
 export { state };

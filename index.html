@@ -9,18 +9,18 @@
     <title>Apple Liquid Glass using Threejs by Anderson Mancini</title>
     <meta
       name="description"
-      content="Liquid Glass via Threejs and React Three Fiber by Anderson Mancini"
+      content="Liquid Glass via Threejs and TSL by Anderson Mancini"
     />
 
     <meta property="og:url" content="https://appleliquidglass.vercel.app/" />
     <meta property="og:type" content="website" />
     <meta
       property="og:title"
-      content="Liquid Glass via Threejs and React Three Fiber by Anderson Mancini"
+      content="Liquid Glass via Threejs and TSL by Anderson Mancini"
     />
     <meta
       property="og:description"
-      content="Liquid Glass via Threejs and React Three Fiber by Anderson Mancini"
+      content="Liquid Glass via Threejs and TSL by Anderson Mancini"
     />
     <meta
       property="og:image"
@@ -35,11 +35,11 @@
     />
     <meta
       name="twitter:title"
-      content="Liquid Glass via Threejs and React Three Fiber by Anderson Mancini"
+      content="Liquid Glass via Threejs and TSL by Anderson Mancini"
     />
     <meta
       name="twitter:description"
-      content="Liquid Glass via Threejs and React Three Fiber by Anderson Mancini"
+      content="Liquid Glass via Threejs and TSL by Anderson Mancini"
     />
     <meta
       name="twitter:image"
@@ -48,11 +48,6 @@
 
     <meta name="keywords" content="HTML, CSS, JavaScript" />
     <meta name="author" content="andersonmancini.dev" />
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, user-scalable=no,initial-scale=1, shrink-to-fit=no, minimum-scale=1.0, maximum-scale=1.0"
-    />
     <link
       rel="apple-touch-icon"
       sizes="180x180"
@@ -76,7 +71,108 @@
   </head>
 
   <body style="background-color: #000000">
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+    <div id="root">
+      <!-- Loading Screen -->
+      <div class="loader-wrapper" id="loader-wrapper">
+        <div class="main-loader" id="main-loader">
+          <svg
+            width="250"
+            height="250"
+            class="circular-progress"
+            viewBox="0 0 250 250"
+          >
+            <circle cy="125" cx="125" r="121" class="bg"></circle>
+            <circle cy="125" cx="125" r="121" class="fg"></circle>
+          </svg>
+          <img
+            class="mantis-bg"
+            src="/water.svg"
+            width="60"
+            draggable="false"
+            style="position: absolute"
+          />
+        </div>
+      </div>
+
+      <!-- Parameter Panel -->
+      <div class="parameter-panel" id="parameter-panel">
+        <p class="parameter-panel__title">Parameters</p>
+
+        <label class="parameter-panel__row">
+          <span class="parameter-panel__label">Bevel Segments</span>
+          <span class="parameter-panel__value" id="val-bevelSegments">20</span>
+          <input class="parameter-panel__slider" type="range" min="0" max="20" step="1" value="20" data-key="bevelSegments" data-integer="true" />
+        </label>
+
+        <label class="parameter-panel__row">
+          <span class="parameter-panel__label">Bevel Offset</span>
+          <span class="parameter-panel__value" id="val-bevelOffset">-0.023</span>
+          <input class="parameter-panel__slider" type="range" min="-0.05" max="0.05" step="0.001" value="-0.023" data-key="bevelOffset" />
+        </label>
+
+        <label class="parameter-panel__row">
+          <span class="parameter-panel__label">Bevel Thickness</span>
+          <span class="parameter-panel__value" id="val-bevelThickness">0.056</span>
+          <input class="parameter-panel__slider" type="range" min="0" max="0.1" step="0.001" value="0.056" data-key="bevelThickness" />
+        </label>
+
+        <label class="parameter-panel__row">
+          <span class="parameter-panel__label">IOR</span>
+          <span class="parameter-panel__value" id="val-textIor">2.5</span>
+          <input class="parameter-panel__slider" type="range" min="1" max="2.5" step="0.01" value="2.5" data-key="textIor" />
+        </label>
+
+        <label class="parameter-panel__row">
+          <span class="parameter-panel__label">Thickness</span>
+          <span class="parameter-panel__value" id="val-textThickness">0.27</span>
+          <input class="parameter-panel__slider" type="range" min="0" max="5" step="0.01" value="0.27" data-key="textThickness" />
+        </label>
+
+        <label class="parameter-panel__row">
+          <span class="parameter-panel__label">Roughness</span>
+          <span class="parameter-panel__value" id="val-textRoughness">0</span>
+          <input class="parameter-panel__slider" type="range" min="0" max="1" step="0.01" value="0" data-key="textRoughness" />
+        </label>
+
+        <label class="parameter-panel__row">
+          <span class="parameter-panel__label">Extrude Depth</span>
+          <span class="parameter-panel__value" id="val-extrudeDepth">1.5</span>
+          <input class="parameter-panel__slider" type="range" min="0.1" max="3" step="0.01" value="1.5" data-key="extrudeDepth" />
+        </label>
+
+        <label class="parameter-panel__row">
+          <span class="parameter-panel__label">Camera Y Angle</span>
+          <span class="parameter-panel__value" id="val-cameraYAngle">0</span>
+          <input class="parameter-panel__slider" type="range" min="-90" max="90" step="1" value="0" data-key="cameraYAngle" data-integer="true" />
+        </label>
+
+        <label class="parameter-panel__row">
+          <span class="parameter-panel__label">Glass Tint</span>
+          <span class="parameter-panel__value" id="val-glassTintColor">#ffffff</span>
+          <input class="parameter-panel__color" type="color" value="#ffffff" data-key="glassTintColor" />
+        </label>
+
+        <label class="parameter-panel__row">
+          <span class="parameter-panel__label">Reflection Map</span>
+          <input class="parameter-panel__checkbox" type="checkbox" checked data-key="glassReflectionEnabled" />
+        </label>
+
+        <label class="parameter-panel__row">
+          <span class="parameter-panel__label">Reflection Opacity</span>
+          <span class="parameter-panel__value" id="val-glassReflectionOpacity">0.05</span>
+          <input class="parameter-panel__slider" type="range" min="0" max="1" step="0.01" value="0.05" data-key="glassReflectionOpacity" />
+        </label>
+
+        <label class="parameter-panel__row">
+          <span class="parameter-panel__label">Camera</span>
+          <span class="parameter-panel__value" id="val-cameraMode">Perspective</span>
+          <select class="parameter-panel__select" data-key="cameraMode">
+            <option value="perspective">Perspective</option>
+            <option value="orthographic">Orthographic</option>
+          </select>
+        </label>
+      </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
   </body>
 </html>

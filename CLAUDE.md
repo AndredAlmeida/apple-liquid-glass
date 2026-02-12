@@ -17,37 +17,34 @@ npm run preview  # Preview production build locally
 npm run deploy   # Deploy to Vercel production
 ```
 
-No linting, testing, or TypeScript — pure JSX/JavaScript project.
+No linting, testing, or TypeScript — pure vanilla JavaScript project (no React).
 
 ## Architecture
 
 ### Rendering Pipeline
 
-- **WebGPURenderer** created asynchronously via `createRenderer()` factory in `App.jsx`
+- **WebGPURenderer** created asynchronously in `main.js`
 - All Three.js imports use `three/webgpu` (not `three`) — this is critical
 - TSL shaders use imports from `three/tsl` (`Fn`, `texture`, `uniform`, `vec2`, etc.)
-- R3F v9 requires `extend(THREE)` at module level to register Three.js classes as JSX elements
 - Vite target is `esnext` (required for top-level await in WebGPU init)
 
 ### State Management
 
-Valtio proxy in `src/store.js` — direct mutation triggers reactive re-renders via `useSnapshot()`. Controls material parameters, background selection, camera mode, display mode, and UI state.
+Valtio proxy in `src/store.js` — uses `valtio/vanilla` (no React). Direct mutation triggers `subscribe()` callbacks. Controls material parameters, background selection, camera mode, and UI state.
 
-### Key Components
+### File Structure
 
-- **App.jsx** — Root: async WebGPURenderer setup, camera config (perspective/orthographic)
-- **CustomCursor.jsx** — Most complex: 4 draggable glass objects (sphere, capsule, triangle, U-shape) using `MeshPhysicalMaterial` with transmission. Geometry created with `ExtrudeGeometry` + configurable bevels. Drag via raycasting to z=0.1 plane
-- **BackgroundImageCover.jsx** — TSL shader for aspect-ratio-correct background covering (like CSS `background-size: cover`). Uses `MeshBasicNodeMaterial` with `.colorNode` assignment. Supports images and video textures
-- **Clock.jsx** — 3D glass time display using `<Text3D>` from drei with iridescence/refraction
-- **Settings.jsx** — 3D UI with background/display option buttons using `Sphere` primitives with `MeshPhysicalNodeMaterial`
-- **ParameterPanel.jsx** — DOM-based control panel (sliders/selects for material params)
-- **Scene.jsx** — Environment setup (warehouse HDR preset via `useEnvironment()`)
-- **AnimateCamera.jsx** — Camera follows `cursorCenter` state with easing, OrbitControls
-- **DynamicLights.jsx** — Directional light follows mouse pointer with easing
+- **main.js** — Entry point: creates renderer, loads assets, sets up scene, starts animation loop
+- **store.js** — Valtio proxy state (material params, camera mode, background, drag state)
+- **scene.js** — Cameras (perspective/orthographic), OrbitControls, lights, animation functions (camera easing, light following pointer)
+- **background.js** — TSL shader for aspect-ratio-correct background covering (`MeshBasicNodeMaterial` with `.colorNode`). Supports images and video textures
+- **glassObjects.js** — 4 draggable glass meshes (sphere, capsule, triangle, U-shape) using `MeshPhysicalMaterial` with transmission. Geometry via `ExtrudeGeometry` + configurable bevels. Drag via raycasting to z=0.1 plane
+- **ui.js** — DOM-based parameter panel wiring, loading screen, grid display
+- **index.css** — All styles including loading screen
 
 ### Material Pattern
 
-Glass materials use `MeshPhysicalMaterial` (auto-mapped to `MeshPhysicalNodeMaterial` via `extend(THREE)`) with `transmission: 1`, configurable `ior`, `thickness`, `roughness`, `iridescence`, `dispersion`, and `clearcoat`.
+Glass materials use `MeshPhysicalMaterial` with `transmission: 1`, configurable `ior`, `thickness`, `roughness`, `iridescence`, `dispersion`, and `clearcoat`.
 
 ### TSL Shader Pattern
 
@@ -62,7 +59,3 @@ Custom shaders compose functional nodes instead of GLSL strings:
 - Browser must support WebGPU (Chrome/Edge 113+, Safari 18+)
 - Verify in console: `navigator.gpu` should exist, no WebGL/GLSL errors
 - All shaders compile to WGSL, never GLSL
-
-## Migration Context
-
-The WebGL-to-WebGPU migration is complete (see `PLAN.md` for the 8-step migration plan). Current branch `apple-liquid-glass-TSL-polishing` is in the refinement phase.

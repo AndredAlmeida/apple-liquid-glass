@@ -5,11 +5,21 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   build: {
-    sourcemap: false
+    sourcemap: false,
+    target: 'esnext',
   },
-  // Add server configuration to allow external access
+  optimizeDeps: {
+    esbuildOptions: {
+      target: 'esnext',
+    },
+  },
+  resolve: {
+    alias: {
+      'three': 'three/webgpu',
+    },
+  },
   server: {
-    host: true, // This enables listening on all local IPs
-    port: 5173  // Default Vite port (optional)
-  }
+    host: true,
+    port: 5173,
+  },
 })
